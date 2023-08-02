@@ -159,11 +159,8 @@ def list_users():
 
     return render_template(
         'users/index.html',
-        users=users,
-        logout_form=g.csrf_form
+        users=users
     )
-    #TODO: is manually including the logout form in every route the
-    # best pattern?
 
 
 @app.get('/users/<int:user_id>')
@@ -177,8 +174,7 @@ def show_user(user_id):
     user = User.query.get_or_404(user_id)
     return render_template(
         'users/show.html',
-        user=user,
-        logout_form=g.csrf_form
+        user=user
     )
 
 
@@ -193,8 +189,7 @@ def show_following(user_id):
     user = User.query.get_or_404(user_id)
     return render_template(
         'users/following.html',
-        user=user,
-        logout_form=g.csrf_form
+        user=user
     )
 
 
@@ -209,8 +204,7 @@ def show_followers(user_id):
     user = User.query.get_or_404(user_id)
     return render_template(
         'users/followers.html',
-        user=user,
-        logout_form=g.csrf_form
+        user=user
     )
 
 
@@ -255,6 +249,15 @@ def profile():
     """Update profile for current user."""
 
     #TODO: IMPLEMENT THIS
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    return render_template(
+        "/users/detail.html",
+        user=g.user
+    )
+
 
 
 @app.post('/users/delete')
@@ -301,8 +304,7 @@ def add_message():
 
     return render_template(
         'messages/create.html',
-        form=form,
-        logout_form=g.csrf_form
+        form=form
     )
 
 
@@ -317,8 +319,7 @@ def show_message(message_id):
     msg = Message.query.get_or_404(message_id)
     return render_template(
         'messages/show.html',
-        message=msg,
-        logout_form=g.csrf_form
+        message=msg
     )
 
 
@@ -362,8 +363,7 @@ def homepage():
 
         return render_template(
             'home.html',
-            messages=messages,
-            logout_form=g.csrf_form
+            messages=messages
         )
 
     else:
