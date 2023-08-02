@@ -5,6 +5,8 @@ from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import Unauthorized
+from sqlalchemy import or_
+import packaging
 
 from forms import (
     UserAddForm,
@@ -138,6 +140,7 @@ def logout():
 
     else:
         raise Unauthorized()
+
     # IMPLEMENT THIS AND FIX BUG
     # DO NOT CHANGE METHOD ON ROUTE
 
@@ -385,12 +388,17 @@ def homepage():
     - logged in: 100 most recent messages of self & followed_users
     """
 
+    cur_user_following = [u.id for u in g.user.following]
+
     if g.user:
-        messages = (Message
-                    .query
-                    .order_by(Message.timestamp.desc())
-                    .limit(100)
-                    .all())
+        messages = (
+            Message
+            .query
+            .filter(or_(Message.user == g.user, Message.user_id.in_(cur_following)))
+            .order_by(Message.timestamp.desc())
+            .limit(100)
+            .all()
+            )
 
         return render_template(
             'home.html',
