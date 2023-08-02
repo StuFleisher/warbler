@@ -6,7 +6,13 @@ from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import Unauthorized
 
-from forms import UserAddForm, LoginForm, MessageForm, CSRFProtectionForm
+from forms import (
+    UserAddForm,
+    UserEditForm,
+    LoginForm,
+    MessageForm,
+    CSRFProtectionForm
+    )
 from models import db, connect_db, User, Message
 
 load_dotenv()
@@ -253,8 +259,33 @@ def profile():
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
+    form = UserEditForm(obj=g.user)
+
+    if form.validate_on_submit():
+        if User.authenticate(
+            username=g.user.username,
+            password=form.password.data
+        ):
+
+            g.user.username = form.username.data
+            g.user.email = form.email.data
+            g.user.image_url = form.image_url.data or g.user.image_url
+            g.user.header_image_url = (
+                form.header_image_url.data or
+                g.user.header_image_url
+            )
+            g.user.location = form.location.data or g.location.bio
+            g.user.bio = form.bio.data or g.user.bio
+
+            db.session.commit()
+
+            return redirect(f"/users/{g.user.id}")
+        else:
+            flash('Incorrect username/password')
+
     return render_template(
-        "/users/detail.html",
+        "/users/edit.html",
+        form=form,
         user=g.user
     )
 
