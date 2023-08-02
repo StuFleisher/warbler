@@ -81,14 +81,20 @@ def signup():
 
         except IntegrityError:
             flash("Username already taken", 'danger')
-            return render_template('users/signup.html', form=form)
+            return render_template(
+                'users/signup.html',
+                form=form,
+                )
 
         do_login(user)
 
         return redirect("/")
 
     else:
-        return render_template('users/signup.html', form=form)
+        return render_template(
+            'users/signup.html',
+            form=form,
+            )
 
 
 @app.route('/login', methods=["GET", "POST"])
@@ -111,6 +117,7 @@ def login():
         flash("Invalid credentials.", 'danger')
 
     return render_template('users/login.html', form=form)
+    #TODO: should we pass the logout form even though user isn't logged in?
 
 
 @app.post('/logout')
@@ -123,8 +130,8 @@ def logout():
         do_logout()
         return redirect('/')
 
-    # else:
-    #     print("----------------------->:", "test")
+    else:
+        raise Unauthorized()
     # IMPLEMENT THIS AND FIX BUG
     # DO NOT CHANGE METHOD ON ROUTE
 
@@ -150,7 +157,13 @@ def list_users():
     else:
         users = User.query.filter(User.username.like(f"%{search}%")).all()
 
-    return render_template('users/index.html', users=users)
+    return render_template(
+        'users/index.html',
+        users=users,
+        logout_form=g.csrf_form
+    )
+    #TODO: is manually including the logout form in every route the
+    # best pattern?
 
 
 @app.get('/users/<int:user_id>')
@@ -162,7 +175,11 @@ def show_user(user_id):
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
-    return render_template('users/show.html', user=user)
+    return render_template(
+        'users/show.html',
+        user=user,
+        logout_form=g.csrf_form
+    )
 
 
 @app.get('/users/<int:user_id>/following')
@@ -174,7 +191,11 @@ def show_following(user_id):
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
-    return render_template('users/following.html', user=user)
+    return render_template(
+        'users/following.html',
+        user=user,
+        logout_form=g.csrf_form
+    )
 
 
 @app.get('/users/<int:user_id>/followers')
@@ -186,7 +207,11 @@ def show_followers(user_id):
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
-    return render_template('users/followers.html', user=user)
+    return render_template(
+        'users/followers.html',
+        user=user,
+        logout_form=g.csrf_form
+    )
 
 
 @app.post('/users/follow/<int:follow_id>')
@@ -274,7 +299,11 @@ def add_message():
 
         return redirect(f"/users/{g.user.id}")
 
-    return render_template('messages/create.html', form=form)
+    return render_template(
+        'messages/create.html',
+        form=form,
+        logout_form=g.csrf_form
+    )
 
 
 @app.get('/messages/<int:message_id>')
@@ -286,7 +315,11 @@ def show_message(message_id):
         return redirect("/")
 
     msg = Message.query.get_or_404(message_id)
-    return render_template('messages/show.html', message=msg)
+    return render_template(
+        'messages/show.html',
+        message=msg,
+        logout_form=g.csrf_form
+    )
 
 
 @app.post('/messages/<int:message_id>/delete')
@@ -327,10 +360,14 @@ def homepage():
                     .limit(100)
                     .all())
 
-        return render_template('home.html', messages=messages)
+        return render_template(
+            'home.html',
+            messages=messages,
+            logout_form=g.csrf_form
+        )
 
     else:
-        return render_template('home-anon.html')
+        return render_template('home-anon.html' )
 
 
 @app.after_request
