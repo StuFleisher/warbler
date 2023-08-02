@@ -40,7 +40,6 @@ def add_user_to_g():
 
 def do_login(user):
     """Log in user."""
-
     session[CURR_USER_KEY] = user.id
 
 
@@ -154,7 +153,6 @@ def show_user(user_id):
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
-
     return render_template('users/show.html', user=user)
 
 
@@ -222,7 +220,7 @@ def stop_following(follow_id):
 def profile():
     """Update profile for current user."""
 
-    # IMPLEMENT THIS
+    #TODO: IMPLEMENT THIS
 
 
 @app.post('/users/delete')
