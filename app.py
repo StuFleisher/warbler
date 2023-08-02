@@ -4,8 +4,9 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
+from werkzeug.exceptions import Unauthorized
 
-from forms import UserAddForm, LoginForm, MessageForm
+from forms import UserAddForm, LoginForm, MessageForm, CSRFProtectionForm
 from models import db, connect_db, User, Message
 
 load_dotenv()
@@ -30,6 +31,8 @@ connect_db(app)
 @app.before_request
 def add_user_to_g():
     """If we're logged in, add curr user to Flask global."""
+
+    g.csrf_form = CSRFProtectionForm()
 
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
@@ -116,6 +119,12 @@ def logout():
 
     form = g.csrf_form
 
+    if form.validate_on_submit():
+        do_logout()
+        return redirect('/')
+
+    # else:
+    #     print("----------------------->:", "test")
     # IMPLEMENT THIS AND FIX BUG
     # DO NOT CHANGE METHOD ON ROUTE
 
