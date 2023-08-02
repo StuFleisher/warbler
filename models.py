@@ -192,3 +192,4 @@ def connect_db(app):
     app.app_context().push()
     db.app = app
     db.init_app(app)
+
