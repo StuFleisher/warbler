@@ -18,6 +18,8 @@ DEFAULT_HEADER_IMAGE_URL = (
     "mat&fit=crop&w=2070&q=80")
 
 
+############################ FOLLOW ############################
+
 class Follow(db.Model):
     """Connection of a follower <-> followed_user."""
 
@@ -34,6 +36,9 @@ class Follow(db.Model):
         db.ForeignKey('users.id', ondelete="cascade"),
         primary_key=True,
     )
+
+
+############################ USER ############################
 
 
 class User(db.Model):
@@ -96,6 +101,8 @@ class User(db.Model):
         secondaryjoin=(Follow.user_following_id == id),
         backref="following",
     )
+
+    likes = db.relationship('Like', backref="user")
 
     def __repr__(self):
         return f"<User #{self.id}: {self.username}, {self.email}>"
@@ -165,7 +172,7 @@ class User(db.Model):
 
         return self
 
-
+############################ MESSAGE ############################
 
 class Message(db.Model):
     """An individual message ("warble")."""
@@ -193,6 +200,37 @@ class Message(db.Model):
         db.ForeignKey('users.id', ondelete='CASCADE'),
         nullable=False,
     )
+
+    likes = db.relationship('Like', backref='message')
+
+
+############################ LIKE ############################
+
+class Like(db.Model):
+    """Like"""
+
+    __tablename__ = "likes"
+
+    id = db.Column(
+        db.Integer,
+        primary_key = True,
+        autoincrement = True
+    )
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete="cascade"),
+        nullable = False
+    )
+
+    message_id = db.Column(
+        db.Integer,
+        db.ForeignKey('messages.id', ondelete="cascade")
+        nullable = False
+    )
+
+
+    # likes = db.relationship("User", backref="")
 
 
 def connect_db(app):
