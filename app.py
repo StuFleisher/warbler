@@ -450,7 +450,7 @@ def like_message(message_id):
     if form.validate_on_submit():
         g.user.likes.append(Message.query.get_or_404(message_id))
         db.session.commit()
-        return redirect ('/')
+        return redirect (request.referrer)
     else:
         print("\n\n\n***","form invalid")
         raise Unauthorized()
@@ -466,7 +466,7 @@ def unlike_message(message_id):
     if form.validate_on_submit():
         g.user.likes.remove(Message.query.get_or_404(message_id))
         db.session.commit()
-        return redirect ('/')
+        return redirect (request.referrer)
 
     else:
         print("\n\n\n***","form invalid")
