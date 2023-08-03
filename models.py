@@ -225,7 +225,7 @@ class Like(db.Model):
 
     message_id = db.Column(
         db.Integer,
-        db.ForeignKey('messages.id', ondelete="cascade")
+        db.ForeignKey('messages.id', ondelete="cascade"),
         nullable = False
     )
 
