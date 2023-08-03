@@ -436,7 +436,46 @@ def homepage():
     else:
         return render_template('home-anon.html' )
 
+##############################################################################
+# Like and unlike
 
+@app.post('/messages/<int:message_id>/like')
+def like_message(message_id):
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    form = g.csrf_form
+    if form.validate_on_submit():
+        g.user.likes.append(Message.query.get_or_404(message_id))
+        db.session.commit()
+        return redirect ('/')
+    else:
+        print("\n\n\n***","form invalid")
+        raise Unauthorized()
+
+@app.post('/messages/<int:message_id>/unlike')
+def unlike_message(message_id):
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    form = g.csrf_form
+    if form.validate_on_submit():
+        g.user.likes.remove(Message.query.get_or_404(message_id))
+        db.session.commit()
+        return redirect ('/')
+
+    else:
+        print("\n\n\n***","form invalid")
+        raise Unauthorized()
+
+
+
+
+##############################################################################
 @app.after_request
 def add_header(response):
     """Add non-caching headers on every request."""
