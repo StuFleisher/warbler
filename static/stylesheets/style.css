@@ -266,9 +266,11 @@ nav + .container {
   left: 0;
   right: 0;
   z-index: 1;
+
 }
 
-#messages .list-group-item a:not(.message-link) {
+#messages .list-group-item a:not(.message-link),
+#messages .list-group-item .like-btn {
   position: relative;
   z-index: 2;
 }
@@ -463,6 +465,7 @@ p.card-bio {
   text-align: left;
 }
 
+
 /* ========================== Signup/Login */
 
 #user_form input.form-control {
@@ -547,4 +550,14 @@ p.card-bio {
 
 .message-404 input {
   flex: 1;
+}
+
+#unlike-form > button.like-btn, #unlike-form > button.unlike-btn {
+  z-index: 9999;
+  color: #ffcc00;
+}
+
+#messages .like-btn a:not(.message-link) {
+  position: relative;
+  z-index: 2;
 }
