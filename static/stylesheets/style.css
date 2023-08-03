@@ -270,7 +270,7 @@ nav + .container {
 }
 
 #messages .list-group-item a:not(.message-link),
-#messages .list-group-item .like-btn {
+#messages .list-group-item .message-like {
   position: relative;
   z-index: 2;
 }
@@ -550,14 +550,4 @@ p.card-bio {
 
 .message-404 input {
   flex: 1;
-}
-
-#unlike-form > button.like-btn, #unlike-form > button.unlike-btn {
-  z-index: 9999;
-  color: #ffcc00;
-}
-
-#messages .like-btn a:not(.message-link) {
-  position: relative;
-  z-index: 2;
 }
