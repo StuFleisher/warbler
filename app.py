@@ -15,7 +15,7 @@ from forms import (
     MessageForm,
     CSRFProtectionForm
     )
-from models import db, connect_db, User, Message
+from models import db, connect_db, User, Message, Like
 
 load_dotenv()
 
