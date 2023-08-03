@@ -441,6 +441,7 @@ def homepage():
 
 @app.post('/messages/<int:message_id>/like')
 def like_message(message_id):
+    """Handle liking a post and redirect to page where request is made."""
 
     if not g.user:
         flash("Access unauthorized.", "danger")
@@ -455,8 +456,10 @@ def like_message(message_id):
         print("\n\n\n***","form invalid")
         raise Unauthorized()
 
+
 @app.post('/messages/<int:message_id>/unlike')
 def unlike_message(message_id):
+    """Handle unliking a post and redirect to page where request is made."""
 
     if not g.user:
         flash("Access unauthorized.", "danger")
@@ -473,6 +476,17 @@ def unlike_message(message_id):
         raise Unauthorized()
 
 
+@app.get('/users/<int:user_id>/likes')
+def display_user_likes(user_id):
+    """Page displaying user likes."""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    user = User.query.get_or_404(user_id)
+
+    return render_template('/users/likes.html', user=user)
 
 
 ##############################################################################
