@@ -39,11 +39,6 @@ class UserEditForm(UserAddForm):
         validators=[Optional(), URL(), Length(max=255)]
     )
 
-    location = StringField(
-        'Location',
-        validators=[Optional(), Length(max=50)]
-    )
-
     bio = TextAreaField(
         "(Optional) Bio",
         validators=[Optional(),Length(max=140)],

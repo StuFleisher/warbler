@@ -154,6 +154,18 @@ class User(db.Model):
             user for user in self.following if user == other_user]
         return len(found_user_list) == 1
 
+    def update_user(self, username, email, image_url, header_image_url, bio):
+        """Updates this user's properties"""
+
+        self.username = username
+        self.email = email
+        self.image_url = image_url
+        self.header_image_url = header_image_url
+        self.bio = bio
+
+        return self
+
+
 
 class Message(db.Model):
     """An individual message ("warble")."""

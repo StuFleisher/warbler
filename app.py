@@ -40,13 +40,17 @@ connect_db(app)
 def add_user_to_g():
     """If we're logged in, add curr user to Flask global."""
 
-    g.csrf_form = CSRFProtectionForm()
-
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
 
     else:
         g.user = None
+
+@app.before_request
+def add_csrf_form_to_g():
+    """create a g scoped variable for our CSRFProtectionForm instance"""
+
+    g.csrf_form = CSRFProtectionForm()
 
 
 def do_login(user):
@@ -125,7 +129,6 @@ def login():
         flash("Invalid credentials.", 'danger')
 
     return render_template('users/login.html', form=form)
-    #TODO: should we pass the logout form even though user isn't logged in?
 
 
 @app.post('/logout')
@@ -136,7 +139,7 @@ def logout():
 
     if form.validate_on_submit():
         do_logout()
-        return redirect('/')
+        return redirect('/')#redirect to login
 
     else:
         raise Unauthorized()
@@ -228,11 +231,17 @@ def start_following(follow_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    followed_user = User.query.get_or_404(follow_id)
-    g.user.following.append(followed_user)
-    db.session.commit()
+    form = g.csrf_form
 
-    return redirect(f"/users/{g.user.id}/following")
+    if form.validate_on_submit():
+
+        followed_user = User.query.get_or_404(follow_id)
+        g.user.following.append(followed_user)
+        db.session.commit()
+
+        return redirect(f"/users/{g.user.id}/following")
+    else:
+        raise Unauthorized()
 
 
 @app.post('/users/stop-following/<int:follow_id>')
@@ -246,12 +255,16 @@ def stop_following(follow_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    followed_user = User.query.get_or_404(follow_id)
-    g.user.following.remove(followed_user)
-    db.session.commit()
+    form = g.csrf_form
 
-    return redirect(f"/users/{g.user.id}/following")
+    if form.validate_on_submit():
+        followed_user = User.query.get_or_404(follow_id)
+        g.user.following.remove(followed_user)
+        db.session.commit()
 
+        return redirect(f"/users/{g.user.id}/following")
+    else:
+        raise Unauthorized()
 
 @app.route('/users/profile', methods=["GET", "POST"])
 def profile():
@@ -270,15 +283,23 @@ def profile():
             password=form.password.data
         ):
 
-            g.user.username = form.username.data
-            g.user.email = form.email.data
-            g.user.image_url = form.image_url.data or g.user.image_url
-            g.user.header_image_url = (
-                form.header_image_url.data or
-                g.user.header_image_url
-            )
-            g.user.location = form.location.data or g.location.bio
-            g.user.bio = form.bio.data or g.user.bio
+            # g.user.username = form.username.data
+            # g.user.email = form.email.data
+            # g.user.image_url = form.image_url.data or g.user.image_url
+            # g.user.header_image_url = (
+            #     form.header_image_url.data or
+            #     g.user.header_image_url
+            # )
+            # g.user.location = form.location.data or g.location.bio
+            # g.user.bio = form.bio.data or g.user.bio
+            g.user.update_user(
+                username=form.username.data,
+                email=form.email.data,
+                image_url=(form.image_url.data or g.user.image_url),
+                header_image_url=(
+                    form.header_image_url.data or g.user.header_image_url),
+                bio=(form.bio.data or g.user.bio)
+            )#allow user to delete images and bio
 
             db.session.commit()
 
@@ -305,12 +326,17 @@ def delete_user():
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    do_logout()
+    form= g.csrf_form
 
-    db.session.delete(g.user)
-    db.session.commit()
+    if form.validate_on_submit():
+        do_logout()
 
-    return redirect("/signup")
+        db.session.delete(g.user)
+        db.session.commit()
+
+        return redirect("/signup")
+    else:
+        raise Unauthorized()
 
 
 ##############################################################################
@@ -368,7 +394,7 @@ def delete_message(message_id):
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
-
+    #TODO: csrf protection
     msg = Message.query.get_or_404(message_id)
     db.session.delete(msg)
     db.session.commit()
@@ -388,13 +414,15 @@ def homepage():
     - logged in: 100 most recent messages of self & followed_users
     """
 
-    cur_user_following = [u.id for u in g.user.following]
 
     if g.user:
+        cur_user_following = [u.id for u in g.user.following] #TODO: rename
         messages = (
             Message
             .query
-            .filter(or_(Message.user == g.user, Message.user_id.in_(cur_following)))
+            .filter(or_(
+                Message.user == g.user,
+                Message.user_id.in_(cur_user_following)))
             .order_by(Message.timestamp.desc())
             .limit(100)
             .all()
