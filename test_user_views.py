@@ -9,6 +9,8 @@ import os
 from unittest import TestCase
 
 from models import db, User, Message, Follow, Like
+from flask import session
+
 
 # BEFORE we import our app, let's set an environmental variable
 # to use a different database for tests (we need to do this
@@ -63,9 +65,7 @@ class UserModelTestCase(TestCase):
         db.session.rollback()
 
 
-    def test_show_user(self):
-        """Show user profile."""
-
+    def test_show_user_profile(self):
         user = User.query.get(self.u1_id)
 
         with self.client as c:
@@ -78,6 +78,42 @@ class UserModelTestCase(TestCase):
             self.assertIn("FOR ROUTE TEST: USER PROFILE PAGE", html)
             self.assertIn(user.username, html)
 
+
+    def test_show_user_profile_logged_out_state(self):
+
+        with self.client as c:
+            resp = c.get(f"/users/{self.u1_id}", follow_redirects=True)
+            self.assertEqual(resp.status_code, 200,) #test status code
+            html = resp.get_data(as_text=True)
+            self.assertIn("FOR ROUTE TEST: HOME-ANON", html)
+            self.assertIn("Access unauthorized", html)
+
+
+    def test_show_user_profile_redirection_logged_out(self):
+
+        with self.client as c:
+            resp = c.get(f"/users/{self.u1_id}")
+            self.assertEqual(resp.status_code, 302)
+            self.assertEqual(resp.location, "/")
+
+
+    def test_login(self):
+        """Test to see if user is logged in and session is updating
+        curr user key."""
+
+        with self.client as c:
+            resp = c.post(
+                "/login",
+                data={
+                    'username': 'u1',
+                    'password': 'password'
+                },
+                follow_redirects=True)
+
+            self.assertEqual(resp.status_code, 200)
+            html = resp.get_data(as_text=True)
+            self.assertIn("FOR ROUTE TEST: HOMEPAGE", html)
+            self.assertTrue(session.get(CURR_USER_KEY))
 
 
 #     def test_show_following(self):
@@ -136,15 +172,3 @@ class UserModelTestCase(TestCase):
 
 
 
-
-# we take a fn that takes a fn as an argument
-# have a fn call that calls previous fn,
-#
-
-
-## test accessing profile page without login
-# with self.client as c:
-#     resp = c.get(f"/users/{self.u1_id}", follow_redirects=True)
-#     self.assertEqual(resp.status_code, 200) #test status code
-#     html = resp.get_data(as_text=True)
-#     self.assertIn("Access unauthorized", html)
