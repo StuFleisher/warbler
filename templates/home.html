@@ -58,11 +58,13 @@
               <p>{{ msg.text }}</p>
               {% if msg is in g.user.likes and g.user.id != msg.user_id %}
               <form action="/messages/{{ msg.id }}/unlike" method="POST">
+                  <input type="hidden" name="came-from" value="/">
                   {{ g.csrf_form.hidden_tag() }}
                   <button class="btn message-like btn-link"><i class="bi bi-star-fill"></i></button>
                 </form>
               {% elif g.user.id != msg.user_id %}
               <form action="/messages/{{ msg.id }}/like" method="POST">
+                  <input type="hidden" name="came-from" value="/">
                   {{ g.csrf_form.hidden_tag() }}
                  <button class="btn message-like btn-link"><i class="bi-star"></i></button>
                 </form>
@@ -75,3 +77,4 @@
 
   </div>
 {% endblock %}
+

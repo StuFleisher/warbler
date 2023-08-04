@@ -144,8 +144,6 @@ def logout():
     else:
         raise Unauthorized()
 
-    # IMPLEMENT THIS AND FIX BUG
-    # DO NOT CHANGE METHOD ON ROUTE
 
 
 ##############################################################################
@@ -394,12 +392,16 @@ def delete_message(message_id):
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
-    #TODO: csrf protection
-    msg = Message.query.get_or_404(message_id)
-    db.session.delete(msg)
-    db.session.commit()
 
-    return redirect(f"/users/{g.user.id}")
+    form=g.csrf_form
+    if form.validate_on_submit():
+        msg = Message.query.get_or_404(message_id)
+        db.session.delete(msg)
+        db.session.commit()
+
+        return redirect(f"/users/{g.user.id}")
+    else:
+        raise Unauthorized()
 
 
 ##############################################################################
@@ -449,9 +451,11 @@ def like_message(message_id):
 
     form = g.csrf_form
     if form.validate_on_submit():
-        g.user.likes.append(Message.query.get_or_404(message_id))
+        #check for liking own post
+        message = Message.query.get_or_404(message_id)
+        g.user.likes.append(message)
         db.session.commit()
-        return redirect (request.referrer)
+        return redirect (request.referrer)#not reliable
     else:
         print("\n\n\n***","form invalid")
         raise Unauthorized()
@@ -467,7 +471,7 @@ def unlike_message(message_id):
 
     form = g.csrf_form
     if form.validate_on_submit():
-        g.user.likes.remove(Message.query.get_or_404(message_id))
+        g.user.likes.remove(Message.query.get_or_404(message_id))#clean up
         db.session.commit()
         return redirect (request.referrer)
 
