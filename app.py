@@ -222,7 +222,7 @@ def show_followers(user_id):
 def start_following(follow_id):
     """Add a follow for the currently-logged-in user.
 
-    Redirect to following page for the current for the current user.
+    Redirect to following page for the current user.
     """
 
     if not g.user:
@@ -246,7 +246,7 @@ def start_following(follow_id):
 def stop_following(follow_id):
     """Have currently-logged-in-user stop following this user.
 
-    Redirect to following page for the current for the current user.
+    Redirect to following page the current user.
     """
 
     if not g.user:
@@ -268,7 +268,6 @@ def stop_following(follow_id):
 def profile():
     """Update profile for current user."""
 
-    #TODO: IMPLEMENT THIS
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -281,15 +280,6 @@ def profile():
             password=form.password.data
         ):
 
-            # g.user.username = form.username.data
-            # g.user.email = form.email.data
-            # g.user.image_url = form.image_url.data or g.user.image_url
-            # g.user.header_image_url = (
-            #     form.header_image_url.data or
-            #     g.user.header_image_url
-            # )
-            # g.user.location = form.location.data or g.location.bio
-            # g.user.bio = form.bio.data or g.user.bio
             g.user.update_user(
                 username=form.username.data,
                 email=form.email.data,
@@ -297,7 +287,7 @@ def profile():
                 header_image_url=(
                     form.header_image_url.data or g.user.header_image_url),
                 bio=(form.bio.data or g.user.bio)
-            )#allow user to delete images and bio
+            ) #allow user to delete images and bio
 
             db.session.commit()
 
@@ -310,7 +300,6 @@ def profile():
         form=form,
         user=g.user
     )
-
 
 
 @app.post('/users/delete')
@@ -418,13 +407,13 @@ def homepage():
 
 
     if g.user:
-        cur_user_following = [u.id for u in g.user.following] #TODO: rename
+        cur_user_following_ids = [u.id for u in g.user.following]
         messages = (
             Message
             .query
             .filter(or_(
                 Message.user == g.user,
-                Message.user_id.in_(cur_user_following)))
+                Message.user_id.in_(cur_user_following_ids)))
             .order_by(Message.timestamp.desc())
             .limit(100)
             .all()
