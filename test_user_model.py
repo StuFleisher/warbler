@@ -7,7 +7,6 @@
 
 import os
 from unittest import TestCase
-
 from models import db, User, Message, Follow, Like
 
 # BEFORE we import our app, let's set an environmental variable
@@ -18,8 +17,9 @@ from models import db, User, Message, Follow, Like
 os.environ['DATABASE_URL'] = "postgresql:///warbler_test"
 
 # Now we can import app
-
+from sqlalchemy.exc import IntegrityError
 from app import app
+
 
 
 DEFAULT_IMAGE_URL = (
@@ -110,8 +110,34 @@ class UserModelTestCase(TestCase):
         """ Does User.signup fail to create a new user if any of the
         validations (eg uniqueness, non-nullable fields) fail?"""
 
-        ...
-#
+        #test duplicate username
+        u3= User.signup('u2',"u3@email.com", "password", None)
+        db.session.add(u3)
+        self.assertRaises(IntegrityError, db.session.commit)
+        db.session.rollback()
+
+        # #test duplicate email
+        u4= User.signup('u4',"u2@email.com", "password", None)
+        db.session.add(u4)
+        self.assertRaises(IntegrityError, db.session.commit)
+        breakpoint()
+        db.session.rollback()
+
+        # #test no username
+        u5= User.signup(None,"u5@email.com", "password", None)
+        db.session.add(u5)
+        self.assertRaises(IntegrityError, db.session.commit)
+        db.session.rollback()
+
+        # #test no email
+        u6= User.signup('u6',None, "password", None)
+        db.session.add(u6)
+        self.assertRaises(IntegrityError, db.session.commit)
+        db.session.rollback()
+
+        # # test no password
+        self.assertRaises(ValueError, User.signup,'u5','u5@email.com',None)
+
 #
 #
 #
