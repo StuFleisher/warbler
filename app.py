@@ -1,4 +1,5 @@
 import os
+import logging
 from dotenv import load_dotenv
 
 from flask import Flask, render_template, request, flash, redirect, session, g
@@ -30,6 +31,13 @@ app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 # toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
+
+
+if not app.debug:
+    app.logger.setLevel(logging.INFO)
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.INFO)
+    app.logger.addHandler(handler)
 
 
 ##############################################################################
@@ -76,6 +84,8 @@ def signup():
     If the there already is a user with that username: flash message
     and re-present form.
     """
+
+    app.logger.info("Attempting signup")
 
     print("Attempting signup")
     do_logout()
