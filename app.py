@@ -77,11 +77,14 @@ def signup():
     and re-present form.
     """
 
+    print("Attempting signup")
     do_logout()
 
     form = UserAddForm()
 
     if form.validate_on_submit():
+        print("Processing as POST request")
+
         try:
             user = User.signup(
                 username=form.username.data,
@@ -103,6 +106,7 @@ def signup():
         return redirect("/")
 
     else:
+        print("Processing as GET request")
         return render_template(
             'users/signup.html',
             form=form,
@@ -117,6 +121,7 @@ def login():
     form = LoginForm()
 
     if form.validate_on_submit():
+        print ("Processing as POST request")
         user = User.authenticate(
             form.username.data,
             form.password.data,
@@ -129,6 +134,7 @@ def login():
 
         flash("Invalid credentials.", 'danger')
 
+    print ("Processing as GET request")
     return render_template('users/login.html', form=form)
 
 
