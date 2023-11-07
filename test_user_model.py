@@ -7,7 +7,7 @@
 
 import os
 from unittest import TestCase
-from models import db, User, Message, Follow, Like
+from models import db, User, Follow
 
 # BEFORE we import our app, let's set an environmental variable
 # to use a different database for tests (we need to do this
@@ -18,7 +18,7 @@ os.environ['DATABASE_URL'] = "postgresql:///warbler_test"
 
 # Now we can import app
 from sqlalchemy.exc import IntegrityError
-from app import app
+# from app import app
 
 
 
@@ -120,7 +120,6 @@ class UserModelTestCase(TestCase):
         u4= User.signup('u4',"u2@email.com", "password", None)
         db.session.add(u4)
         self.assertRaises(IntegrityError, db.session.commit)
-        breakpoint()
         db.session.rollback()
 
         # #test no username
